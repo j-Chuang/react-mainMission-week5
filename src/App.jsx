@@ -13,13 +13,18 @@ function App() {
   const [cart, setCart] = useState({});
   const [isScreenLoading, setIsScreenLoading] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [canCheckOut, setCanCheckOut] = useState(false);
 
 
   const getCart = async () => {
     try {
       const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/cart`)
-      console.log(res.data)
-      setCart(res.data.data)
+      setCart(res.data.data);
+      if (res.data.data.carts.length === 0) {
+        setCanCheckOut(true)
+      } else {
+        setCanCheckOut(false)
+      }
     } catch (error) {
       alert('取得購物車失敗')
     }
@@ -132,6 +137,7 @@ function App() {
   } = useForm()
 
   const onSubmit = handleSubmit((data) => {
+    if (canCheckOut){
     const { message, ...user } = data;
     const userInfo = {
       data: {
@@ -140,6 +146,7 @@ function App() {
     }
     }
     checkOut(userInfo);
+  }
   })
 
   const checkOut = async (data) => {
@@ -435,7 +442,7 @@ function App() {
             ></textarea>
           </div>
           <div className="text-end">
-            <button type="submit" className="btn btn-danger">
+            <button type="submit" className="btn btn-danger" disabled={canCheckOut}>
               送出訂單
             </button>
           </div>
