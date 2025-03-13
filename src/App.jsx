@@ -13,18 +13,15 @@ function App() {
   const [cart, setCart] = useState({});
   const [isScreenLoading, setIsScreenLoading] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [canCheckOut, setCanCheckOut] = useState(false);
+
+  // 根據購物車是否為空決定可否checkOut(含onSubmit與送出鈕)
+  const canCheckOut = Boolean(cart.carts?.length);
 
 
   const getCart = async () => {
     try {
       const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/cart`)
       setCart(res.data.data);
-      if (res.data.data.carts.length === 0) {
-        setCanCheckOut(true)
-      } else {
-        setCanCheckOut(false)
-      }
     } catch (error) {
       alert('取得購物車失敗')
     }
@@ -137,7 +134,6 @@ function App() {
   } = useForm()
 
   const onSubmit = handleSubmit((data) => {
-    if (canCheckOut){
     const { message, ...user } = data;
     const userInfo = {
       data: {
@@ -146,7 +142,6 @@ function App() {
     }
     }
     checkOut(userInfo);
-  }
   })
 
   const checkOut = async (data) => {
@@ -189,7 +184,7 @@ function App() {
                 <td>{product.title}</td>
                 <td>
                   <del className="h6">原價 {product.origin_price} 元</del>
-                  <div className="h5">特價 {product.origin_price}元</div>
+                  <div className="h5">特價 {product.price}元</div>
                 </td>
                 <td>
                   <div className="btn-group btn-group-sm">
@@ -248,8 +243,7 @@ function App() {
                 <p>內容：{tempProduct.content}</p>
                 <p>描述：{tempProduct.description}</p>
                 <p>
-                  價錢：{tempProduct.price}{" "}
-                  <del>{tempProduct.origin_price}</del> 元
+                  價錢：<del><small>{tempProduct.origin_price}</small></del>{" "}{tempProduct.price}{" "}元
                 </p>
                 <div className="input-group align-items-center">
                   <label htmlFor="qtySelect">數量：</label>
@@ -355,7 +349,7 @@ function App() {
       </div>
 
       <div className="my-5 row justify-content-center">
-        <form onSubmit={onSubmit} className="col-md-6">
+        <form onSubmit={canCheckOut? onSubmit : null} className="col-md-6">
           <div className="mb-3">
             <label htmlFor="email" className="form-label">
               Email
@@ -442,7 +436,7 @@ function App() {
             ></textarea>
           </div>
           <div className="text-end">
-            <button type="submit" className="btn btn-danger" disabled={canCheckOut}>
+            <button type="submit" className="btn btn-danger" disabled={!canCheckOut}>
               送出訂單
             </button>
           </div>
